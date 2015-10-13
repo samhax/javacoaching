@@ -1,4 +1,4 @@
-va Faker
+Java Coaching
 ==========
 
 Spring project full of Java goodness 
@@ -16,6 +16,7 @@ Please refer to POM.XML for dependencies.
 
 --------------------------------------------------------------
 INSTALLATION INSTRUCTIONS
+----
 
 1. Install MYSQL Database. Please use: /script/mysql.sql  
 This file contains queries to create required tables under the "test" database.
@@ -24,11 +25,12 @@ This file contains queries to create required tables under the "test" database.
 Sample inserts can be found. 
 Additionally, I created a java main class that helped me create thousands of insert statements. 
 
-3. Build and deploy the application to local tomcat: http://localhost:8080/SpringMVCTemplate/
+3. Build and deploy the application to local tomcat: http://localhost:8080/SpringSecurity/
 
 ---------------------------------------------------------------
 
-++++Missing Stuff++++
+Missing Stuff
+-----
 Here is a list of things I had no time to implement:
 1. More CSS stylings. Also my CSS is included in the jsp
 2. JAVA DOC. Had no time to properly document code.
