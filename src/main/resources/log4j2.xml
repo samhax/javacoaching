@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="ERROR">
+<Properties>
+<Property name="log-path">.</Property>
+</Properties>
+<Appenders>
+<Console name="STDOUT">
+      <PatternLayout pattern="%m MDC%X%n"/>
+    </Console>
+<RollingFile name="RollingFile" fileName="${log-path}/meLog.log"
+filePattern="${log-path}/meLog-%d{yyyy-MM-dd}-%i.log" >
+<PatternLayout>
+<pattern>%d{dd/MMM/yyyy HH:mm:ss,SSS}- %c{1}: %m%n</pattern>
+</PatternLayout>
+<Policies>
+<SizeBasedTriggeringPolicy size="900 KB" />
+</Policies>
+<DefaultRolloverStrategy max="4"/>
+</RollingFile>
+</Appenders>
+<Loggers>
+<Logger name="melogger" additivity="false">
+<AppenderRef level="trace" ref="STDOUT"/>
+</Logger>
+<Root level="ERROR" additivity="false">
+<AppenderRef ref="RollingFile"/>
+<AppenderRef ref="STDOUT"/>
+</Root>
+</Loggers>
+</Configuration>
