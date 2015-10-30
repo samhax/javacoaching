@@ -14,7 +14,7 @@
 <c:if test="${pageContext.request.userPrincipal.name == null}">
 			<a href="/SpringSecurity/login">User page</a>
 			<a href="/SpringSecurity/admin**">Admin page</a>
+			<a href="/SpringSecurity/supload">Sam's FileReader</a>
 	</c:if>
-	
 </body>
 </html>
