@@ -9,11 +9,8 @@
         http://www.springframework.org/schema/context/spring-context-3.0.xsd
         http://www.springframework.org/schema/mvc
         http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
-
-	<context:component-scan base-package="com.template.*" />
+	<context:component-scan base-package="com.template.*"/>
 	<mvc:annotation-driven />
-
-
 	
 	<bean class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver">
 	    <property name="favorPathExtension" value="true" />
@@ -39,9 +36,12 @@
 	
 	<bean id="multipartResolver"
         class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!-- max upload size in bytes -->
+        <property name="maxUploadSize" value="20971520" /> <!-- 20MB -->
+         
+        <!-- max size of file in memory (in bytes) -->
+        <property name="maxInMemorySize" value="1048576" /> <!-- 1MB -->
  
-         <!-- setting maximum upload size -->
-        <property name="maxUploadSize" value="100000" />
     </bean>
 
 </beans>
