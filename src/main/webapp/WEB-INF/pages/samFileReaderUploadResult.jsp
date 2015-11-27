@@ -22,18 +22,7 @@
 </style>
 </head>
 <body>
- 
-    <form method="POST" action="supload" enctype="multipart/form-data">
-	    <div>File to upload: <input type="file" name="file"></div>
-	    <div>Name: <input type="text" name="name"></div>
-		<div><input type="submit" value="Upload"></div>
-		<input type="hidden"
-		name="${_csrf.parameterName}"
-		value="${_csrf.token}"/>
-    </form>
-     
-     
-    <c:choose>
+ 	<c:choose>
  	<c:when test="${success != null}">
  		<div class="success">${success}</div>
  	</c:when>
