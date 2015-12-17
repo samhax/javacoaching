@@ -1,83 +1,77 @@
 package com.java.filer;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
+import java.util.Arrays;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.web.multipart.MultipartFile;
 
 public class FileManager {
 	private static final Logger log = LogManager.getLogger("melogger");
-	
-	static final String[] FOLDER_NAMES = new String[]{ 
-			"Unread Files",
-			"Processed Files",
-			"Error Files"
-			};
-	
-	public void doStuff(){
-		createFolders();
-		verifyFolders();
-		createFiles();
-		moveFiles();
+
+    private static String rootPath = System.getProperty("catalina.home");
+    private static File dir = new File(rootPath + File.separator + "tmpFiles");
+    
+
+	public String getFullName(String name, String ext) {
+		String filename = getFilename(name, ext);
+		String fullname = rootPath + File.separator + "tmpFiles" + File.separator + filename;
+		return fullname;
 	}
-	
-	private void moveFiles(){
-		log.trace("Moving files");
-		File[] files = getFolderPath(FOLDER_NAMES[0]).toFile().listFiles();
-		int filesLength = files.length;
-		for (int i = 0; i < filesLength; i++) {
-			files[i].renameTo(getFilePath(FOLDER_NAMES[1], i).toFile());
-		}
+    
+    public String getFilename(String name, String ext) {
+		return name + (ext != null && ext.length() > 0 ? "." + ext : "");
 	}
-	
-	private boolean verifyFolders(){
-		log.debug("Verifying folders are ok.");
-		boolean allDirectoriesOk = true;
-		for (String name : FOLDER_NAMES) {
-			allDirectoriesOk &= Files.exists(getFolderPath(name), LinkOption.NOFOLLOW_LINKS);
+
+	public String readDocument(String name, String ext) throws FileNotFoundException, IOException {
+		String fullname = getFullName(name, ext);
+		BufferedReader br = new BufferedReader(new FileReader(fullname));
+		try{
+		StringBuilder sb = new StringBuilder();
+		String line = br.readLine();
+
+		while (line != null) {
+		    sb.append(line);
+		    sb.append(System.lineSeparator());
+		    line = br.readLine();
 		}
-		return allDirectoriesOk;
-	}
-	
-	private void createFolders(){
-		log.debug("Creating Folders.");
-		for (String name : FOLDER_NAMES) {
-			getFolderPath(name).toFile().mkdir();
-		}
-	}
-	
-	private void createFiles(){
-		log.debug("Creating Unread Files");
-		boolean failed = false;
-		for (int i = 0; i < 10; i++) {
-			try {
-				getFilePath(FOLDER_NAMES[0], i).toFile().createNewFile();
-			} catch (IOException e) {
-				log.error("Failed to create file");
-				failed = true;
-			}
-		}
-		if(failed){
-			log.error("finished creating files. All ok, apparently");			
-		} else {
-			log.debug("finished creating files. Something went wrong");
+		String document = sb.toString();
+		return document;
+		} finally {
+			br.close();
 		}
 	}
 
-	private Path getFilePath(String folderName, int i) {
-		return getFolderPath(folderName + "/file"+String.valueOf(i)+".txt");
+	public String[] getDirectoryItems() {
+		if (!dir.exists()){
+			dir.mkdirs();
+		}
+		
+		String[] items = dir.list();
+		Arrays.sort(items);
+		return items;
 	}
 
-	private Path getFolderPath(String name){
-		return Paths.get(getCurrentPath().toAbsolutePath() + "/" + name);
-	}
-	
-	private Path getCurrentPath() {
-		 return Paths.get("");
+	public File saveFile(String name, MultipartFile file) throws IOException, FileNotFoundException {
+        if (!dir.exists()){
+        	dir.mkdirs();
+        }
+        
+		byte[] bytes = file.getBytes();
+ 
+		// Create the file on server
+		File serverFile = new File(dir.getAbsolutePath()
+		        + File.separator + name);
+		BufferedOutputStream stream = new BufferedOutputStream(
+		        new FileOutputStream(serverFile));
+		stream.write(bytes);
+		stream.close();
+		return serverFile;
 	}
 }

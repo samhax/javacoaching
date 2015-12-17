@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
+
+import com.java.filer.FileManager;
  
 /**
  * Handles requests for the application file upload requests
@@ -32,52 +34,27 @@ public class SFileUploadController {
     private static final Logger logger = LoggerFactory
             .getLogger(SFileUploadController.class);
  
-
+    private static FileManager man = new FileManager();
 
     /**
      * Upload single file using Spring Controller
+     * @throws IOException 
      */
     @RequestMapping(value = "/sview/{name}.{ext}", method = RequestMethod.GET)
     public ModelAndView viewFileHandler(@PathVariable("name") String name,
-    		@PathVariable("ext") String ext) {
+    		@PathVariable("ext") String ext) throws IOException {
         ModelAndView model = new ModelAndView();
 		model.addObject("title",
 				"Upload Result");
 		model.setViewName("samFileReaderViewer");
 		
-		String filename = name + (ext != null && ext.length() > 0 ? "." + ext : "");
+		String filename = man.getFilename(name, ext);
 		
 		model.addObject("docname", filename);
-		
-		// Creating the directory to store file
-        String rootPath = System.getProperty("catalina.home");
-		String fullname = rootPath + File.separator + "tmpFiles" + File.separator + filename;
         
-        BufferedReader br;
 		try {
-			br = new BufferedReader(new FileReader(fullname));
-	        try {
-	            StringBuilder sb = new StringBuilder();
-	            String line = br.readLine();
-
-	            while (line != null) {
-	                sb.append(line);
-	                sb.append(System.lineSeparator());
-	                line = br.readLine();
-	            }
-	            String document = sb.toString();
-	            model.addObject("document", document);
-	        } catch (Exception e){
-				model.addObject("code", "500");
-				model.addObject("error", "Error trying to read the file");
-	        } 
-	        finally {
-	            try {
-					br.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-	        }
+        	String document = man.readDocument(name, ext);
+            model.addObject("document", document);
 		} catch (FileNotFoundException e) {
 			model.addObject("code", "404");
 			model.addObject("error", "File not found");
@@ -88,34 +65,19 @@ public class SFileUploadController {
     
 	@RequestMapping(value = { "/supload" }, method = RequestMethod.GET)
 	public ModelAndView defaultPage() {
-
 		ModelAndView model = new ModelAndView();
 		model.addObject("title",
 				"Spring Security Login Form - Database Authentication");
 		model.addObject("message", "This is default page!");
 		model.setViewName("samFileReader");
-		
-
-		// Creating the directory to store file
-        String rootPath = System.getProperty("catalina.home");
-        File dir = new File(rootPath + File.separator + "tmpFiles");
 
 		try{
-	        if (!dir.exists()){
-	        	dir.mkdirs();
-	        }
+	        model.addObject("serverItemList", man.getDirectoryItems());
+			return model;
 		} catch (Exception x){
 			model.addObject("error", "Error trying to create the file folder.");
-            
             return model;
 		}
-		
-        String[] items = dir.list();
-        Arrays.sort(items);
-        model.addObject("serverItemList", items);
-
-		
-		return model;
 	}
 	
     /**
@@ -130,14 +92,7 @@ public class SFileUploadController {
 				"Upload Result");
 		model.setViewName("samFileReaderUploadResult");
 
-		// Creating the directory to store file
-        String rootPath = System.getProperty("catalina.home");
-        File dir = new File(rootPath + File.separator + "tmpFiles");
-
 		try{
-	        if (!dir.exists()){
-	        	dir.mkdirs();
-	        }
 		} catch (Exception x){
 			model.addObject("error", "Error trying to create the file folder.");
             
@@ -146,15 +101,7 @@ public class SFileUploadController {
         
         if (!file.isEmpty()) {
             try {
-                byte[] bytes = file.getBytes();
- 
-                // Create the file on server
-                File serverFile = new File(dir.getAbsolutePath()
-                        + File.separator + name);
-                BufferedOutputStream stream = new BufferedOutputStream(
-                        new FileOutputStream(serverFile));
-                stream.write(bytes);
-                stream.close();
+                File serverFile = man.saveFile(name, file);
  
                 logger.info("Server File Location="
                         + serverFile.getAbsolutePath());
@@ -167,10 +114,8 @@ public class SFileUploadController {
             model.addObject("error", "You failed to upload " + name
                     + " because the file was empty.");
         }
-
-        String[] items = dir.list();
-        Arrays.sort(items);
-        model.addObject("serverItemList", items);
+        
+        model.addObject("serverItemList", man.getDirectoryItems());
 
         return model;
     }
